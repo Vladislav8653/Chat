@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 using System.Text.Json;
 
 namespace Server
@@ -21,14 +22,17 @@ namespace Server
         }
         public MessagePacket? GetMessage(Socket socket)
         {
-            int bytesRead; 
-            byte[] inputData = new byte[256]; 
-            do
+            byte[] inputData = new byte[1024];
+            int bytesRead;
+            try
             {
                 bytesRead = socket.Receive(inputData);
             }
-            while (bytesRead > 0);
-            Console.WriteLine(DateTime.Now.ToShortTimeString() + ": " + inputData.ToString());
+            catch (Exception)
+            {
+                return null;
+            }
+            Array.Resize(ref inputData, bytesRead);
             return AnalyseMessage(inputData);
         }
         public MessagePacket CreateMessage(string senderName, string targetName, string systemMessage, string usefulMessage)
